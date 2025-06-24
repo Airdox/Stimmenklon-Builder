@@ -1,23 +1,38 @@
-[app]
-title = Voice Cloning App
-package.name = voicecloningapp
-package.domain = org.example
-source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,wav,mp3,m4a,ogg,txt,md,pth
-version = 0.1
-requirements = python3,kivy
-orientation = portrait
-android.permissions = READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
-android.api = 31
-android.minapi = 21
-android.ndk = 25b
-android.build_tools_version = 33.0.0
-android.accept_sdk_license = True
-android.arch = armeabi-v7a
-android.release_artifact = apk
-android.enable_androidx = True
-android.gradle_parameters = --no-daemon, -Dorg.gradle.jvmargs=-Xmx4G
+# Name des automatisierten Prozesses
+name: Build Android APK
 
-[buildozer]
-log_level = 2
-warn_on_deprecated = 1
+# Wann soll dieser Prozess gestartet werden?
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+# Definiert die Aufgaben ("Jobs"), die ausgeführt werden sollen
+jobs:
+  build-android:
+    # Verwendet die neueste Version von Ubuntu als Basis
+    runs-on: ubuntu-latest
+
+    steps:
+      # Schritt 1: Kopiert Ihren Code (main.py, buildozer.spec) in die Build-Umgebung
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Schritt 2: Verwendet die offizielle Kivy-Buildozer-Action.
+      # Diese lädt einen perfekten Docker-Container, in dem alle Werkzeuge funktionieren.
+      - name: Build with Buildozer
+        uses: kivy/buildozer-action@v1
+        id: buildozer
+        with:
+          # Der Befehl, der innerhalb des Containers ausgeführt wird
+          command: buildozer -v android debug
+          # Wir geben explizit den Namen unserer Konfigurationsdatei an
+          spec_file: buildozer.spec
+
+      # Schritt 3: Lädt die fertige APK-Datei als "Artefakt" hoch
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: voicecloningapp-apk
+          # Dieser spezielle Pfad greift auf die Ausgabe des vorherigen Schritts zu
+          path: ${{ steps.buildozer.outputs.package_path }}
