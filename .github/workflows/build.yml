@@ -1,53 +1,41 @@
 # Name des automatisierten Prozesses
-name: Build Android APK (Definitive Fix)
+name: Build Android APK with Kivy Docker Action
 
 # Wann soll dieser Prozess gestartet werden?
 on:
-  # Bei jedem "Push" (Upload) auf den Haupt-Branch
   push:
     branches: [ "main" ]
-  # Ermöglicht es uns, den Prozess manuell zu starten
   workflow_dispatch:
 
 # Definiert die Aufgaben ("Jobs"), die ausgeführt werden sollen
 jobs:
-  build:
-    # Verwendet die neueste Version von Ubuntu als Build-Umgebung
+  build-android:
+    # Verwendet die neueste Version von Ubuntu als Basis
     runs-on: ubuntu-latest
 
-    # Definiert die einzelnen Schritte des Jobs
     steps:
-    # Schritt 1: Das Repository in die Build-Umgebung kopieren
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # Schritt 1: Kopiert Ihren Code in die Umgebung
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    # Schritt 2: Den korrekten Namen für die Hauptdatei festlegen
-    - name: Rename main file for build
-      run: mv main_apk.py main.py
+      # Schritt 2: Benennt Ihre Hauptdatei korrekt um
+      - name: Rename main file for build
+        run: mv main_apk.py main.py
 
-    # Schritt 3: Java Development Kit (JDK) installieren
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '11'
+      # Schritt 3: Verwendet die offizielle Kivy-Buildozer-Action
+      # Dies ist die Magie. Diese Action lädt einen perfekten Docker-Container,
+      # in dem alle Abhängigkeiten bereits korrekt installiert und konfiguriert sind.
+      - name: Build with Buildozer
+        uses: kivy/buildozer-action@master
+        id: buildozer
+        with:
+          # Wir führen hier den exakt gleichen Befehl aus, aber in einer perfekten Umgebung
+          command: buildozer -v android debug
 
-    # Schritt 4: Buildozer und ALLE Systemabhängigkeiten installieren
-    - name: Install Buildozer and all dependencies
-      run: |
-        pip install --upgrade cython==0.29.32 buildozer==1.5.0
-        sudo apt-get update
-        # DER DEFINITIVE FIX: Installiert die VORKOMPILIERTE libffi-Bibliothek
-        # und überspringt damit den fehlerhaften Build-Schritt.
-        sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo-dev cmake libffi-dev libssl-dev ant
-
-    # Schritt 5: Den Buildozer-Befehl ausführen
-    - name: Run Buildozer
-      run: buildozer -v android debug
-
-    # Schritt 6: Die fertige APK-Datei als "Artefakt" hochladen
-    - name: Upload APK as Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: voicecloningapp-apk
-        path: bin/*.apk
+      # Schritt 4: Lädt die fertige APK-Datei hoch
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: voicecloningapp-apk
+          # Dieser Pfad verweist auf die Ausgabe der vorherigen Action
+          path: ${{ steps.buildozer.outputs.package_path }}
