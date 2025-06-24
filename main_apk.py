@@ -26,7 +26,14 @@ class VoiceCloningApp(App):
         self.train_layout.add_widget(Label(text='Audiodateien für Training auswählen:'))
         
         # Dateiauswahl
-        self.file_chooser = FileChooserListView(path=os.path.expanduser('~'))
+        # In Android ist der Zugriff auf das Home-Verzeichnis oft eingeschränkt. Wir starten im Root.
+        try:
+            user_path = os.path.expanduser('~')
+            if not os.path.exists(user_path):
+                user_path = '/'
+        except Exception:
+            user_path = '/'
+        self.file_chooser = FileChooserListView(path=user_path)
         self.train_layout.add_widget(self.file_chooser)
         
         # Button zum Auswählen der Dateien
@@ -113,21 +120,21 @@ class VoiceCloningApp(App):
         selected = self.file_chooser.selection
         if selected:
             self.selected_files_label.text = f'{len(selected)} Dateien ausgewählt'
-            self.log_output.text += f'Dateien ausgewählt: {", ".join(selected)}\n'
+            self.log_output.text += f'Dateien ausgewählt: {", ".join(selected)}\\n'
         else:
             self.selected_files_label.text = 'Keine Dateien ausgewählt'
     
     def start_training(self, instance):
         """Simuliert den Trainingsprozess"""
         if not self.file_chooser.selection:
-            self.log_output.text += 'Fehler: Keine Audiodateien ausgewählt\n'
+            self.log_output.text += 'Fehler: Keine Audiodateien ausgewählt\\n'
             return
         
         if not self.model_name_input.text:
-            self.log_output.text += 'Fehler: Kein Modellname eingegeben\n'
+            self.log_output.text += 'Fehler: Kein Modellname eingegeben\\n'
             return
         
-        self.log_output.text += f'Training gestartet für Modell: {self.model_name_input.text}\n'
+        self.log_output.text += f'Training gestartet für Modell: {self.model_name_input.text}\\n'
         self.progress_bar.value = 0
         self.progress_label.text = 'Fortschritt: 0%'
         
@@ -137,8 +144,9 @@ class VoiceCloningApp(App):
     def update_progress(self, dt):
         """Aktualisiert den Fortschrittsbalken"""
         if self.progress_bar.value >= 100:
-            self.train_event.cancel()
-            self.log_output.text += 'Training abgeschlossen!\n'
+            if hasattr(self, 'train_event'):
+                self.train_event.cancel()
+            self.log_output.text += 'Training abgeschlossen!\\n'
             self.progress_label.text = 'Fortschritt: 100%'
             return
         
@@ -149,8 +157,8 @@ class VoiceCloningApp(App):
         self.progress_label.text = f'Fortschritt: {int(new_value)}%'
         
         # Log-Updates
-        if new_value % 10 == 0:
-            self.log_output.text += f'Training bei {int(new_value)}% abgeschlossen...\n'
+        if int(new_value) % 10 < 5 and int(new_value - progress_increment) % 10 >= 5: # Log only once per 10%
+             self.log_output.text += f'Training bei {int(new_value)}%...\\n'
     
     def select_model(self, instance):
         """Simuliert die Auswahl eines Modells"""
@@ -170,6 +178,7 @@ class VoiceCloningApp(App):
             return
         
         self.tts_status.text = 'Sprachsynthese läuft...'
+        self.play_button.disabled = True
         
         # Simuliere Verarbeitungszeit
         Clock.schedule_once(self.finish_synthesis, 2)
