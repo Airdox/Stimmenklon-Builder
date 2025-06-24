@@ -1,0 +1,51 @@
+# Name des automatisierten Prozesses
+name: Build Android APK
+
+# Wann soll dieser Prozess gestartet werden?
+on:
+  # Bei jedem "Push" (Upload) auf den Haupt-Branch
+  push:
+    branches: [ "main" ]
+  # Ermöglicht es uns, den Prozess manuell zu starten
+  workflow_dispatch:
+
+# Definiert die Aufgaben ("Jobs"), die ausgeführt werden sollen
+jobs:
+  build:
+    # Verwendet die neueste Version von Ubuntu als Build-Umgebung
+    runs-on: ubuntu-latest
+
+    # Definiert die einzelnen Schritte des Jobs
+    steps:
+    # Schritt 1: Das Repository in die Build-Umgebung kopieren
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Schritt 2: Den korrekten Namen für die Hauptdatei festlegen (unser Fix!)
+    - name: Rename main file for build
+      run: mv main_apk.py main.py
+
+    # Schritt 3: Java Development Kit (JDK) installieren, das von Gradle benötigt wird
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    # Schritt 4: Buildozer und alle Systemabhängigkeiten installieren
+    - name: Install Buildozer and dependencies
+      run: |
+        pip install --upgrade cython==0.29.32 buildozer==1.5.0
+        sudo apt-get update
+        sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo-dev cmake libffi-dev libssl-dev
+
+    # Schritt 5: Den Buildozer-Befehl ausführen, um die APK zu erstellen
+    - name: Run Buildozer
+      run: buildozer -v android debug
+
+    # Schritt 6: Die fertige APK-Datei als "Artefakt" hochladen, damit wir sie herunterladen können
+    - name: Upload APK as Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: voicecloningapp-apk
+        path: bin/*.apk
