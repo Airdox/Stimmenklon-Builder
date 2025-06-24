@@ -43,9 +43,9 @@ jobs:
     - name: Run Buildozer
       run: buildozer -v android debug
 
-    # Schritt 6: Die fertige APK-Datei als "Artefakt" hochladen, damit wir sie herunterladen können
+    # Schritt 6: Die fertige APK-Datei als "Artefakt" hochladen (JETZT MIT v4)
     - name: Upload APK as Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: voicecloningapp-apk
         path: bin/*.apk
