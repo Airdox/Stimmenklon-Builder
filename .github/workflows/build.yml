@@ -1,5 +1,5 @@
 # Name des automatisierten Prozesses
-name: Build Android APK (FINAL)
+name: Build Android APK (Definitive Fix)
 
 # Wann soll dieser Prozess gestartet werden?
 on:
@@ -32,12 +32,14 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
 
-    # Schritt 4: Buildozer und ALLE Systemabhängigkeiten installieren (MIT DEM FINALEN FIX)
+    # Schritt 4: Buildozer und ALLE Systemabhängigkeiten installieren
     - name: Install Buildozer and all dependencies
       run: |
         pip install --upgrade cython==0.29.32 buildozer==1.5.0
         sudo apt-get update
-        sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo-dev cmake libffi-dev libssl-dev ant libtool-bin autoconf automake
+        # DER DEFINITIVE FIX: Installiert die VORKOMPILIERTE libffi-Bibliothek
+        # und überspringt damit den fehlerhaften Build-Schritt.
+        sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo-dev cmake libffi-dev libssl-dev ant
 
     # Schritt 5: Den Buildozer-Befehl ausführen
     - name: Run Buildozer
