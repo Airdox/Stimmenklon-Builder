@@ -1,37 +1,49 @@
-# Name des automatisierten Prozesses
 name: Build Android APK (Direct Docker Method)
 
-# Wann soll dieser Prozess gestartet werden?
 on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
 
-# Definiert die Aufgaben ("Jobs"), die ausgeführt werden sollen
 jobs:
   build-android:
-    # Verwendet die neueste Version von Ubuntu als Basis
     runs-on: ubuntu-latest
 
     steps:
-      # Schritt 1: Kopiert Ihren Code (main.py, buildozer.spec) in die Build-Umgebung
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Schritt 2: Führt den Buildozer-Befehl direkt im offiziellen Kivy Docker-Container aus
-      - name: Build with Buildozer using Docker
-        # Dies ist der entscheidende Schritt. Wir rufen Docker direkt auf.
+      # Docker-Image Pull mit Cache
+      - name: Cache Docker Image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.docker-cache
+          key: kivy-buildozer-latest
+
+      - name: Pull Kivy Buildozer Docker Image
         run: |
+          mkdir -p /tmp/.docker-cache
+          if ! docker image inspect kivy/buildozer:latest > /dev/null 2>&1; then
+            docker pull kivy/buildozer:latest
+          fi
+
+      - name: Build with Buildozer using Docker
+        run: |
+          set -e
           docker run --rm \
             -v "$(pwd)":/home/user/app \
             kivy/buildozer:latest \
             buildozer -v android debug
 
-      # Schritt 3: Lädt die fertige APK-Datei als "Artefakt" hoch
+      - name: Check for APK
+        run: |
+          if ! ls bin/*.apk 1> /dev/null 2>&1; then
+            echo "Keine APK gefunden! Build fehlgeschlagen."
+            exit 1
+          fi
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: voicecloningapp-apk
-          # Der Build-Prozess erstellt den 'bin'-Ordner in unserem lokalen Verzeichnis,
-          # daher ist dieser Pfad korrekt.
           path: bin/*.apk
