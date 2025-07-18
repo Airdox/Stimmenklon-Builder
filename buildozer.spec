@@ -45,6 +45,9 @@ log_level = 2
 # (int) Display-Warnung, wenn das Buildozer-Verzeichnis nicht auf dem aktuellen Pfad ist (0 = False, 1 = True)
 warn_on_root = 1
 
+# (str) Buildozer-Verzeichnis (Standard ist .buildozer)
+buildozer_dir = .buildozer
+
 [android]
 
 # (str) Android-Eintrag-Punkt, Standard ist ok für Kivy-basierte Apps
@@ -70,9 +73,6 @@ android.ndk_path =
 
 # (bool) Android-NDK automatisch akzeptieren (falls nicht im SDK-Manager installiert)
 android.accept_sdk_license = True
-
-# (str) Android-Einstiegsklasse, Standard ist ok für Kivy-basierte Apps
-android.entrypoint = org.kivy.android.PythonActivity
 
 # (str) Android-Anwendungsklasse, Standard ist ok für Kivy-basierte Apps
 android.appclass = org.kivy.android.PythonActivity
@@ -107,7 +107,3 @@ android.allow_backup = True
 # (bool) Zeige Anwendungsicon im Anwendungsmenü an
 android.icon_adaptive_foreground_color = #2E7D32
 android.icon_adaptive_background_color = #FFFFFF
-
-[buildozer]
-# (str) Buildozer-Verzeichnis (Standard ist .buildozer)
-buildozer_dir = .buildozer
