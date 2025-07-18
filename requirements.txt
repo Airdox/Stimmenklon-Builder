@@ -1,0 +1,10 @@
+# Core dependencies for Stimmenklon-Builder
+kivy>=2.1.0
+kivymd>=1.1.1
+
+# Android build dependencies (for development)
+buildozer>=1.4.0
+cython>=0.29.21
+
+# Additional utilities
+plyer>=2.1.0  # For platform-specific features (file chooser, notifications)
