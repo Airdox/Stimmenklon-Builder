@@ -1,0 +1,37 @@
+# Stimmenklon-Builder Requirements
+# Core dependencies for Zonos TTS integration
+
+# Zonos TTS and dependencies
+zonos>=0.1.0.dev0
+torch>=2.5.1
+torchaudio>=2.5.1
+transformers>=4.48.1
+soundfile>=0.13.1
+huggingface-hub>=0.28.1
+
+# Core Python libraries
+numpy>=2.2.2
+packaging
+setuptools
+
+# Text processing for multilingual support
+inflect>=7.5.0
+phonemizer>=3.3.0
+
+# Japanese text processing (for Zonos multilingual support)
+kanjize>=1.5.0
+sudachidict-full>=20241021
+sudachipy>=0.6.10
+
+# Kivy for Android GUI
+kivy>=2.1.0
+kivymd>=1.1.1
+
+# Audio processing
+librosa>=0.9.0
+scipy>=1.9.0
+
+# Optional performance optimizations (for advanced users)
+# flash-attn>=2.7.3
+# mamba-ssm>=2.2.4
+# causal-conv1d>=1.5.0.post8
